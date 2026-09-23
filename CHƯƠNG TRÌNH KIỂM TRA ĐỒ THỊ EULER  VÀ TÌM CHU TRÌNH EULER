@@ -1,0 +1,544 @@
+# ==========================================================
+# CHƯƠNG TRÌNH KIỂM TRA ĐỒ THỊ EULER
+# VÀ TÌM CHU TRÌNH EULER
+# Thuật toán:
+# - DFS: kiểm tra liên thông
+# - Đếm bậc đỉnh
+# - Kiểm tra Euler / nửa Euler
+# - Hierholzer: tìm chu trình Euler
+# ==========================================================
+
+
+# ==========================================================
+# 1. HÀM TẠO TÊN ĐỈNH
+# ==========================================================
+
+def tao_ten_dinh(index):
+    """
+    Chuyển số thứ tự thành tên đỉnh.
+
+    0  -> A
+    1  -> B
+    ...
+    25 -> Z
+    26 -> AA
+    27 -> AB
+    28 -> AC
+    """
+
+    result = ""
+
+    index += 1
+
+    while index > 0:
+
+        index -= 1
+
+        result = chr(index % 26 + ord('A')) + result
+
+        index //= 26
+
+    return result
+
+
+# ==========================================================
+# 2. HÀM CHUYỂN TÊN ĐỈNH -> CHỈ SỐ
+# ==========================================================
+
+def chi_so_dinh(name):
+
+    name = name.upper().strip()
+
+    value = 0
+
+    for char in name:
+
+        if not ('A' <= char <= 'Z'):
+            return -1
+
+        value = value * 26 + (ord(char) - ord('A') + 1)
+
+    return value - 1
+
+
+# ==========================================================
+# 3. NHẬP DỮ LIỆU
+# ==========================================================
+
+print("==========================================")
+print("       KIỂM TRA ĐỒ THỊ EULER")
+print("==========================================")
+
+n = int(input("Nhập số đỉnh n = "))
+
+m = int(input("Nhập số cạnh m = "))
+
+
+# ==========================================================
+# 4. TẠO TÊN CHO CÁC ĐỈNH
+# ==========================================================
+
+vertices = []
+
+for i in range(n):
+
+    vertices.append(tao_ten_dinh(i))
+
+
+print("\nCác đỉnh của đồ thị:")
+
+print(", ".join(vertices))
+
+
+# ==========================================================
+# 5. TẠO DANH SÁCH KỀ
+# ==========================================================
+
+graph = [[] for _ in range(n)]
+
+
+print("\n==========================================")
+print("          NHẬP CÁC CẠNH")
+print("==========================================")
+
+print("Có thể nhập:")
+print("A,B")
+print("hoặc")
+print("A B")
+
+print("\nVí dụ:")
+print("Cạnh 1: A,B")
+print("Cạnh 2: B,C")
+print("Cạnh 3: C,A")
+
+
+# ==========================================================
+# 6. NHẬP CÁC CẠNH
+# ==========================================================
+
+for i in range(m):
+
+    while True:
+
+        try:
+
+            data = input(f"\nCạnh {i + 1}: ").strip()
+
+            # Cho phép nhập dấu phẩy
+            data = data.replace(",", " ")
+
+            parts = data.split()
+
+            if len(parts) != 2:
+
+                print(
+                    "❌ Hãy nhập đúng dạng: A,B hoặc A B"
+                )
+
+                continue
+
+
+            u_name = parts[0].upper()
+            v_name = parts[1].upper()
+
+
+            # Kiểm tra tên đỉnh
+            u = chi_so_dinh(u_name)
+            v = chi_so_dinh(v_name)
+
+
+            # Kiểm tra đỉnh có tồn tại
+            if u < 0 or v < 0:
+
+                print(
+                    "❌ Tên đỉnh không hợp lệ!"
+                )
+
+                continue
+
+
+            if u >= n or v >= n:
+
+                print(
+                    "❌ Đỉnh không tồn tại!"
+                )
+
+                print(
+                    "Các đỉnh hợp lệ là:"
+                )
+
+                print(
+                    ", ".join(vertices)
+                )
+
+                continue
+
+
+            # Không cho phép cạnh tự nối
+            if u == v:
+
+                print(
+                    "❌ Không được nối một đỉnh "
+                    "với chính nó!"
+                )
+
+                continue
+
+
+            break
+
+
+        except Exception:
+
+            print(
+                "❌ Dữ liệu không hợp lệ!"
+            )
+
+
+    # Đồ thị vô hướng
+    graph[u].append(v)
+    graph[v].append(u)
+
+
+# ==========================================================
+# 7. HIỂN THỊ DANH SÁCH KỀ
+# ==========================================================
+
+print("\n==========================================")
+print("          DANH SÁCH KỀ")
+print("==========================================")
+
+for i in range(n):
+
+    danh_sach = []
+
+    for v in graph[i]:
+
+        danh_sach.append(
+            vertices[v]
+        )
+
+
+    if len(danh_sach) > 0:
+
+        print(
+            f"Đỉnh {vertices[i]}: "
+            + ", ".join(danh_sach)
+        )
+
+    else:
+
+        print(
+            f"Đỉnh {vertices[i]}: không có cạnh"
+        )
+
+
+# ==========================================================
+# 8. TÍNH BẬC CỦA CÁC ĐỈNH
+# ==========================================================
+
+degree = []
+
+for i in range(n):
+
+    degree.append(
+        len(graph[i])
+    )
+
+
+print("\n==========================================")
+print("          BẬC CỦA CÁC ĐỈNH")
+print("==========================================")
+
+for i in range(n):
+
+    print(
+        f"Đỉnh {vertices[i]}: "
+        f"bậc = {degree[i]}"
+    )
+
+
+# ==========================================================
+# 9. DFS
+# ==========================================================
+
+visited = [False] * n
+
+
+def DFS(u):
+
+    visited[u] = True
+
+    for v in graph[u]:
+
+        if not visited[v]:
+
+            DFS(v)
+
+
+# ==========================================================
+# 10. TÌM ĐỈNH BẮT ĐẦU
+# ==========================================================
+
+start = -1
+
+for i in range(n):
+
+    if degree[i] > 0:
+
+        start = i
+
+        break
+
+
+# ==========================================================
+# 11. ĐỒ THỊ KHÔNG CÓ CẠNH
+# ==========================================================
+
+if start == -1:
+
+    print("\n==========================================")
+    print("              KẾT LUẬN")
+    print("==========================================")
+
+    print("⚠️ Đồ thị không có cạnh.")
+
+    exit()
+
+
+# ==========================================================
+# 12. KIỂM TRA LIÊN THÔNG
+# ==========================================================
+
+DFS(start)
+
+connected = True
+
+for i in range(n):
+
+    # Chỉ xét các đỉnh có cạnh
+    if degree[i] > 0 and not visited[i]:
+
+        connected = False
+
+        break
+
+
+print("\n==========================================")
+print("          KIỂM TRA LIÊN THÔNG")
+print("==========================================")
+
+if connected:
+
+    print("✅ Đồ thị liên thông.")
+
+else:
+
+    print("❌ Đồ thị không liên thông.")
+
+
+# ==========================================================
+# 13. TÌM ĐỈNH BẬC LẺ
+# ==========================================================
+
+odd_vertices = []
+
+for i in range(n):
+
+    if degree[i] % 2 != 0:
+
+        odd_vertices.append(i)
+
+
+print("\n==========================================")
+print("          ĐỈNH BẬC LẺ")
+print("==========================================")
+
+if len(odd_vertices) == 0:
+
+    print("Không có đỉnh bậc lẻ.")
+
+else:
+
+    print("Các đỉnh bậc lẻ:")
+
+    for v in odd_vertices:
+
+        print(
+            f"Đỉnh {vertices[v]}: "
+            f"bậc = {degree[v]}"
+        )
+
+
+print(
+    f"\nSố đỉnh bậc lẻ: "
+    f"{len(odd_vertices)}"
+)
+
+
+# ==========================================================
+# 14. KẾT LUẬN
+# ==========================================================
+
+print("\n==========================================")
+print("             KẾT LUẬN")
+print("==========================================")
+
+
+if not connected:
+
+    print("❌ KHÔNG PHẢI ĐỒ THỊ EULER.")
+
+    print(
+        "→ Lý do: Đồ thị không liên thông."
+    )
+
+
+elif len(odd_vertices) == 0:
+
+    print("✅ ĐÂY LÀ ĐỒ THỊ EULER.")
+
+    print(
+        "→ Tất cả các đỉnh đều có bậc chẵn."
+    )
+
+    print(
+        "→ Có chu trình Euler."
+    )
+
+
+elif len(odd_vertices) == 2:
+
+    print("⚠️ ĐÂY LÀ ĐỒ THỊ NỬA EULER.")
+
+    print(
+        "→ Có đúng 2 đỉnh bậc lẻ."
+    )
+
+    print(
+        "→ Có đường đi Euler."
+    )
+
+    print(
+        "→ Không có chu trình Euler."
+    )
+
+
+else:
+
+    print("❌ KHÔNG CÓ ĐƯỜNG ĐI EULER.")
+
+    print(
+        "→ Có nhiều hơn 2 đỉnh bậc lẻ."
+    )
+
+
+# ==========================================================
+# 15. TÌM CHU TRÌNH EULER
+# ==========================================================
+
+if connected and len(odd_vertices) == 0:
+
+    print("\n==========================================")
+    print("          TÌM CHU TRÌNH EULER")
+    print("==========================================")
+
+
+    # ------------------------------------------------------
+    # Sao chép danh sách kề
+    # ------------------------------------------------------
+
+    temp_graph = []
+
+    for i in range(n):
+
+        temp_graph.append(
+            graph[i].copy()
+        )
+
+
+    # ------------------------------------------------------
+    # THUẬT TOÁN HIERHOLZER
+    # ------------------------------------------------------
+
+    stack = [start]
+
+    circuit = []
+
+
+    while stack:
+
+        u = stack[-1]
+
+
+        # Nếu vẫn còn cạnh chưa đi
+        if len(temp_graph[u]) > 0:
+
+            # Chọn một đỉnh kề
+            v = temp_graph[u].pop()
+
+
+            # Xóa cạnh ở phía đối diện
+            temp_graph[v].remove(u)
+
+
+            # Đi sang đỉnh v
+            stack.append(v)
+
+
+        else:
+
+            # Không còn cạnh
+            # đưa đỉnh vào chu trình
+
+            circuit.append(
+                stack.pop()
+            )
+
+
+    # ------------------------------------------------------
+    # Đảo ngược chu trình
+    # ------------------------------------------------------
+
+    circuit.reverse()
+
+
+    # ------------------------------------------------------
+    # KIỂM TRA
+    # ------------------------------------------------------
+
+    if len(circuit) == m + 1:
+
+        print("✅ Chu trình Euler là:")
+
+        for i in range(len(circuit)):
+
+            print(
+                vertices[circuit[i]],
+                end=""
+            )
+
+            if i < len(circuit) - 1:
+
+                print(
+                    " → ",
+                    end=""
+                )
+
+        print()
+
+
+    else:
+
+        print(
+            "❌ Không thể tạo chu trình Euler."
+        )
+
+
+# ==========================================================
+# 16. KẾT THÚC
+# ==========================================================
+
+print("\n==========================================")
+print("              KẾT THÚC")
+print("==========================================")
