@@ -1,0 +1,366 @@
+# ==========================================================
+# KIỂM TRA ĐỒ THỊ + KRUSKAL + PRIM + DIJKSTRA
+# ==========================================================
+
+INF = float('inf')
+
+
+# ==========================================================
+# NHẬP ĐỒ THỊ
+# ==========================================================
+
+def nhap_do_thi():
+    n = int(input("Nhap so dinh: "))
+    m = int(input("Nhap so canh: "))
+
+    edges = []
+
+    print("\nNhap cac canh theo dang: u v trong_so")
+
+    for i in range(m):
+        while True:
+            u, v, w = map(int, input(f"Canh {i + 1}: ").split())
+
+            if u < 1 or u > n or v < 1 or v > n:
+                print("Dinh khong hop le!")
+                continue
+
+            if u == v:
+                print("Khong cho phep canh vong!")
+                continue
+
+            if w < 0:
+                print("Trong so phai >= 0!")
+                continue
+
+            edges.append((u, v, w))
+            break
+
+    return n, m, edges
+
+
+# ==========================================================
+# TAO MA TRAN KE
+# ==========================================================
+
+def tao_ma_tran(n, edges):
+    graph = [[0] * (n + 1) for _ in range(n + 1)]
+
+    for u, v, w in edges:
+        graph[u][v] = w
+        graph[v][u] = w
+
+    return graph
+
+
+# ==========================================================
+# KIEM TRA DO THI LIEN THONG
+# ==========================================================
+
+def dfs(graph, u, visited):
+    visited[u] = True
+
+    for v in range(1, len(graph)):
+        if graph[u][v] != 0 and not visited[v]:
+            dfs(graph, v, visited)
+
+
+def lien_thong(graph, n):
+    visited = [False] * (n + 1)
+
+    dfs(graph, 1, visited)
+
+    for i in range(1, n + 1):
+        if not visited[i]:
+            return False
+
+    return True
+
+
+# ==========================================================
+# KRUSKAL
+# ==========================================================
+
+def find(parent, x):
+    if parent[x] != x:
+        parent[x] = find(parent, parent[x])
+
+    return parent[x]
+
+
+def union(parent, a, b):
+    a = find(parent, a)
+    b = find(parent, b)
+
+    if a == b:
+        return False
+
+    parent[b] = a
+    return True
+
+
+def kruskal(n, edges):
+
+    print("\n" + "=" * 50)
+    print("              THUAT TOAN KRUSKAL")
+    print("=" * 50)
+
+    if not lien_thong(tao_ma_tran(n, edges), n):
+        print("Do thi khong lien thong!")
+        print("Khong ton tai cay khung.")
+        return
+
+    edges_sorted = sorted(edges, key=lambda x: x[2])
+
+    parent = list(range(n + 1))
+
+    mst = []
+    total = 0
+
+    print("\nCac canh sau khi sap xep:")
+
+    for u, v, w in edges_sorted:
+        print(f"{u} - {v}: {w}")
+
+    print("\nQua trinh chon:")
+
+    for u, v, w in edges_sorted:
+
+        if union(parent, u, v):
+
+            mst.append((u, v, w))
+            total += w
+
+            print(f"  CHON  {u} - {v} ({w})")
+
+            if len(mst) == n - 1:
+                break
+
+        else:
+            print(f"  BO    {u} - {v} ({w}) -> tao chu trinh")
+
+    print("\nCAY KHUNG NHO NHAT:")
+
+    for u, v, w in mst:
+        print(f"{u} -- {v} : {w}")
+
+    print("Tong trong so =", total)
+
+
+# ==========================================================
+# PRIM
+# ==========================================================
+
+def prim(graph, n):
+
+    print("\n" + "=" * 50)
+    print("                THUAT TOAN PRIM")
+    print("=" * 50)
+
+    if not lien_thong(graph, n):
+        print("Do thi khong lien thong!")
+        print("Khong ton tai cay khung.")
+        return
+
+    key = [INF] * (n + 1)
+    parent = [-1] * (n + 1)
+    used = [False] * (n + 1)
+
+    key[1] = 0
+
+    mst = []
+    total = 0
+
+    for _ in range(n):
+
+        u = -1
+
+        # Tim dinh chua chon co key nho nhat
+        for i in range(1, n + 1):
+
+            if not used[i] and (u == -1 or key[i] < key[u]):
+                u = i
+
+        if u == -1:
+            break
+
+        used[u] = True
+
+        if parent[u] != -1:
+
+            mst.append((parent[u], u, key[u]))
+            total += key[u]
+
+            print(
+                f"CHON {parent[u]} - {u} ({key[u]})"
+            )
+
+        # Cap nhat cac dinh ke
+        for v in range(1, n + 1):
+
+            if graph[u][v] != 0:
+                if not used[v] and graph[u][v] < key[v]:
+
+                    key[v] = graph[u][v]
+                    parent[v] = u
+
+    print("\nCAY KHUNG NHO NHAT:")
+
+    for u, v, w in mst:
+        print(f"{u} -- {v} : {w}")
+
+    print("Tong trong so =", total)
+
+
+# ==========================================================
+# DIJKSTRA
+# ==========================================================
+
+def dijkstra(graph, n, start):
+
+    print("\n" + "=" * 50)
+    print("              THUAT TOAN DIJKSTRA")
+    print("=" * 50)
+
+    if start < 1 or start > n:
+        print("Dinh bat dau khong hop le!")
+        return
+
+    dist = [INF] * (n + 1)
+    parent = [-1] * (n + 1)
+    used = [False] * (n + 1)
+
+    dist[start] = 0
+
+    for _ in range(n):
+
+        u = -1
+
+        # Tim dinh co khoang cach nho nhat
+        for i in range(1, n + 1):
+
+            if not used[i] and (
+                u == -1 or dist[i] < dist[u]
+            ):
+                u = i
+
+        if u == -1 or dist[u] == INF:
+            break
+
+        used[u] = True
+
+        # Relaxation
+        for v in range(1, n + 1):
+
+            if graph[u][v] != 0:
+
+                new_dist = dist[u] + graph[u][v]
+
+                if new_dist < dist[v]:
+
+                    dist[v] = new_dist
+                    parent[v] = u
+
+    print(f"\nDiem bat dau: {start}")
+
+    for i in range(1, n + 1):
+
+        if dist[i] == INF:
+            print(f"{start} -> {i}: Khong co duong di")
+
+        else:
+            print(
+                f"{start} -> {i}: "
+                f"Khoang cach = {dist[i]}"
+            )
+
+
+# ==========================================================
+# HIEN THI DO THI
+# ==========================================================
+
+def hien_thi_do_thi(n, edges):
+
+    print("\n" + "=" * 50)
+    print("                  DO THI")
+    print("=" * 50)
+
+    print("So dinh:", n)
+    print("So canh:", len(edges))
+
+    print("\nDanh sach canh:")
+
+    for u, v, w in edges:
+        print(f"{u} -- {v} : {w}")
+
+
+# ==========================================================
+# MENU
+# ==========================================================
+
+def menu():
+
+    n, m, edges = nhap_do_thi()
+
+    graph = tao_ma_tran(n, edges)
+
+    while True:
+
+        print("\n")
+        print("=" * 50)
+        print("              CHUONG TRINH DO THI")
+        print("=" * 50)
+
+        print("1. Hien thi do thi")
+        print("2. Chay Kruskal")
+        print("3. Chay Prim")
+        print("4. Chay Dijkstra")
+        print("5. Chay ca 3 thuat toan")
+        print("0. Thoat")
+
+        choice = input("\nChon: ")
+
+        if choice == "1":
+
+            hien_thi_do_thi(n, edges)
+
+        elif choice == "2":
+
+            kruskal(n, edges.copy())
+
+        elif choice == "3":
+
+            prim(graph, n)
+
+        elif choice == "4":
+
+            start = int(input("Nhap dinh bat dau: "))
+            dijkstra(graph, n, start)
+
+        elif choice == "5":
+
+            kruskal(n, edges.copy())
+            prim(graph, n)
+
+            start = int(
+                input("\nNhap dinh bat dau cho Dijkstra: ")
+            )
+
+            dijkstra(graph, n, start)
+
+        elif choice == "0":
+
+            print("Ket thuc chuong trinh!")
+            break
+
+        else:
+
+            print("Lua chon khong hop le!")
+
+
+# ==========================================================
+# MAIN
+# ==========================================================
+
+if __name__ == "__main__":
+    menu()
