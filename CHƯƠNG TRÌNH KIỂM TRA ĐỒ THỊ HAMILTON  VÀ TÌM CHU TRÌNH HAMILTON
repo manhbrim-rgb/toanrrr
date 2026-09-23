@@ -1,0 +1,423 @@
+# ==========================================================
+# CHƯƠNG TRÌNH KIỂM TRA ĐỒ THỊ HAMILTON
+# VÀ TÌM CHU TRÌNH HAMILTON
+#
+# Tên đỉnh:
+# A, B, C, ..., Z, AA, AB, AC, ...
+#
+# Thuật toán:
+# - Backtracking
+# - Tìm chu trình Hamilton
+# ==========================================================
+
+
+# ==========================================================
+# 1. HÀM TẠO TÊN ĐỈNH
+# ==========================================================
+
+def tao_ten_dinh(index):
+    """
+    0  -> A
+    1  -> B
+    ...
+    25 -> Z
+    26 -> AA
+    27 -> AB
+    28 -> AC
+    """
+
+    result = ""
+
+    index += 1
+
+    while index > 0:
+        index -= 1
+        result = chr(index % 26 + ord('A')) + result
+        index //= 26
+
+    return result
+
+
+# ==========================================================
+# 2. HÀM CHUYỂN TÊN ĐỈNH THÀNH CHỈ SỐ
+# ==========================================================
+
+def chi_so_dinh(name):
+
+    name = name.upper().strip()
+
+    value = 0
+
+    for char in name:
+
+        if not ('A' <= char <= 'Z'):
+            return -1
+
+        value = value * 26 + (
+            ord(char) - ord('A') + 1
+        )
+
+    return value - 1
+
+
+# ==========================================================
+# 3. NHẬP DỮ LIỆU
+# ==========================================================
+
+print("==========================================")
+print("       KIỂM TRA ĐỒ THỊ HAMILTON")
+print("==========================================")
+
+n = int(input("Nhập số đỉnh n = "))
+m = int(input("Nhập số cạnh m = "))
+
+
+# ==========================================================
+# 4. TẠO TÊN CÁC ĐỈNH
+# ==========================================================
+
+vertices = []
+
+for i in range(n):
+    vertices.append(tao_ten_dinh(i))
+
+
+print("\nCác đỉnh của đồ thị:")
+print(", ".join(vertices))
+
+
+# ==========================================================
+# 5. TẠO MA TRẬN KỀ
+# ==========================================================
+
+graph = [
+    [False] * n
+    for _ in range(n)
+]
+
+
+# ==========================================================
+# 6. NHẬP CÁC CẠNH
+# ==========================================================
+
+print("\n==========================================")
+print("          NHẬP CÁC CẠNH")
+print("==========================================")
+
+print("Có thể nhập:")
+print("A,B")
+print("hoặc")
+print("A B")
+
+
+for i in range(m):
+
+    while True:
+
+        try:
+
+            data = input(
+                f"Cạnh {i + 1}: "
+            ).strip()
+
+            # Cho phép nhập A,B
+            data = data.replace(",", " ")
+
+            parts = data.split()
+
+            if len(parts) != 2:
+
+                print(
+                    "❌ Nhập theo dạng A,B hoặc A B"
+                )
+
+                continue
+
+
+            u_name = parts[0].upper()
+            v_name = parts[1].upper()
+
+
+            u = chi_so_dinh(u_name)
+            v = chi_so_dinh(v_name)
+
+
+            # Kiểm tra đỉnh
+            if u < 0 or v < 0:
+
+                print(
+                    "❌ Tên đỉnh không hợp lệ!"
+                )
+
+                continue
+
+
+            if u >= n or v >= n:
+
+                print(
+                    "❌ Đỉnh không tồn tại!"
+                )
+
+                print(
+                    "Các đỉnh hợp lệ:"
+                )
+
+                print(
+                    ", ".join(vertices)
+                )
+
+                continue
+
+
+            # Không cho cạnh tự nối
+            if u == v:
+
+                print(
+                    "❌ Không được nối "
+                    "đỉnh với chính nó!"
+                )
+
+                continue
+
+
+            break
+
+
+        except ValueError:
+
+            print(
+                "❌ Dữ liệu không hợp lệ!"
+            )
+
+
+    # Đồ thị vô hướng
+    graph[u][v] = True
+    graph[v][u] = True
+
+
+# ==========================================================
+# 7. HIỂN THỊ MA TRẬN KỀ
+# ==========================================================
+
+print("\n==========================================")
+print("             MA TRẬN KỀ")
+print("==========================================")
+
+
+print("    ", end="")
+
+for name in vertices:
+    print(f"{name:>4}", end="")
+
+print()
+
+
+for i in range(n):
+
+    print(
+        f"{vertices[i]:>4}",
+        end=""
+    )
+
+    for j in range(n):
+
+        if graph[i][j]:
+            print(f"{1:>4}", end="")
+
+        else:
+            print(f"{0:>4}", end="")
+
+    print()
+
+
+# ==========================================================
+# 8. TÍNH BẬC CÁC ĐỈNH
+# ==========================================================
+
+degree = []
+
+for i in range(n):
+
+    count = 0
+
+    for j in range(n):
+
+        if graph[i][j]:
+            count += 1
+
+    degree.append(count)
+
+
+print("\n==========================================")
+print("          BẬC CÁC ĐỈNH")
+print("==========================================")
+
+
+for i in range(n):
+
+    print(
+        f"Đỉnh {vertices[i]}: "
+        f"bậc = {degree[i]}"
+    )
+
+
+# ==========================================================
+# 9. HIỂN THỊ DANH SÁCH KỀ
+# ==========================================================
+
+print("\n==========================================")
+print("          DANH SÁCH KỀ")
+print("==========================================")
+
+
+for i in range(n):
+
+    neighbors = []
+
+    for j in range(n):
+
+        if graph[i][j]:
+
+            neighbors.append(
+                vertices[j]
+            )
+
+
+    print(
+        f"{vertices[i]}: "
+        + ", ".join(neighbors)
+    )
+
+
+# ==========================================================
+# 10. THUẬT TOÁN BACKTRACKING
+# TÌM CHU TRÌNH HAMILTON
+# ==========================================================
+
+path = [-1] * n
+
+visited = [False] * n
+
+
+def is_safe(vertex, position):
+
+    # Điều kiện 1:
+    # vertex phải nối với đỉnh trước đó
+
+    previous = path[position - 1]
+
+    if not graph[previous][vertex]:
+
+        return False
+
+
+    # Điều kiện 2:
+    # vertex chưa được sử dụng
+
+    if visited[vertex]:
+
+        return False
+
+
+    return True
+
+
+def ham_cycle(position):
+
+    # ------------------------------------------------------
+    # Nếu đã đi qua tất cả các đỉnh
+    # ------------------------------------------------------
+
+    if position == n:
+
+        # Phải có cạnh từ đỉnh cuối
+        # quay về đỉnh đầu
+
+        if graph[path[n - 1]][path[0]]:
+
+            return True
+
+        return False
+
+
+    # ------------------------------------------------------
+    # Thử từng đỉnh
+    # ------------------------------------------------------
+
+    for vertex in range(1, n):
+
+        if is_safe(vertex, position):
+
+            path[position] = vertex
+            visited[vertex] = True
+
+
+            # Đệ quy
+            if ham_cycle(position + 1):
+
+                return True
+
+
+            # Backtrack
+            path[position] = -1
+            visited[vertex] = False
+
+
+    return False
+
+
+# ==========================================================
+# 11. BẮT ĐẦU TÌM CHU TRÌNH
+# ==========================================================
+
+print("\n==========================================")
+print("        KIỂM TRA CHU TRÌNH HAMILTON")
+print("==========================================")
+
+
+# Cố định đỉnh đầu tiên là A
+path[0] = 0
+visited[0] = True
+
+
+found = ham_cycle(1)
+
+
+# ==========================================================
+# 12. KẾT QUẢ
+# ==========================================================
+
+if found:
+
+    print(
+        "✅ ĐỒ THỊ CÓ CHU TRÌNH HAMILTON."
+    )
+
+    print("\nChu trình Hamilton:")
+
+    for i in range(n):
+
+        print(
+            vertices[path[i]],
+            end=" → "
+        )
+
+    # Quay lại đỉnh đầu
+
+    print(vertices[path[0]])
+
+
+else:
+
+    print(
+        "❌ ĐỒ THỊ KHÔNG CÓ CHU TRÌNH HAMILTON."
+    )
+
+
+# ==========================================================
+# 13. KẾT THÚC
+# ==========================================================
+
+print("\n==========================================")
+print("              KẾT THÚC")
+print("==========================================")
